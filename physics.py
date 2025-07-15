@@ -1,6 +1,9 @@
 import numpy as np
 import math
 
+PRESSUREAT0 = 101325
+WATERDENSITY = 1000
+G = 9.81
 
 # 1
 def calculate_buoyancy(density_fluid, V):
@@ -22,7 +25,7 @@ def calculate_buoyancy(density_fluid, V):
 
 
 # 2
-def will_it_float(V, mass):  # V in m^3, mass in kg
+def will_it_float(V, mass):
     """
     Determines if an object will float in water.
 
@@ -33,11 +36,11 @@ def will_it_float(V, mass):  # V in m^3, mass in kg
     True if object floats, False if it sinks.
     """
 
-    water_density = 1000  # in kg/m^3
+     # in kg/m^3
     object_density = V * mass
     if V <= 0 or mass <= 0:
         raise ValueError("mass of object and volume must be greater than 0")
-    if object_density < water_density:
+    if object_density < WATERDENSITY:
         return True
     else:
         return False
@@ -53,8 +56,7 @@ def calculate_pressure(depth):  # depth in meters
     Returns:
     pressure (float): pressure exerted on object in Pascals.
     """
-
-    pressure = depth * 9.81 * 1000
+    pressure = depth * G * 1000 + PRESSUREAT0
     return pressure
 
 
@@ -103,8 +105,8 @@ def calculate_torque(F_magnitude, F_direction, r):
     torque (float): torque applied to object in newton-meters
     """
 
-    F_radians = math.radians(F_direction) #turns into radians
-    torque = F_magnitude * math.sin(F_radians) * r #cross product r * F
+    F_radians = np.radians(F_direction) #turns into radians
+    torque = F_magnitude * np.sin(F_radians) * r #cross product r * F
     return torque
 
 
@@ -148,7 +150,7 @@ def calculate_auv_acceleration(F_magnitude, F_angle, mass=100):
     return auv_acceleration
 
 
-def calculate_auv_angular_acceleration(F_magnitude, F_angle, inertia, thruster_distance = 0.5):
+def calculate_auv_angular_acceleration(F_magnitude, F_angle, inertia = 1, thruster_distance = 0.5):
     """
     Calculates the angular acceleration of the AUV in the 2D plane.
     
@@ -164,11 +166,12 @@ def calculate_auv_angular_acceleration(F_magnitude, F_angle, inertia, thruster_d
         raise ValueError("angle between 30 and -30")
     if F_magnitude < 0 or F_magnitude > 100:
         raise ValueError("thruster force between 0 and 100N")
-    torque = F_magnitude * math.sin(F_angle) * thruster_distance  # thruster distance is 0.5
+    torque = F_magnitude * math.sin(F_angle) * thruster_distance 
     angular_acceleration = torque / inertia
     
     return angular_acceleration
 
+print (calculate_auv_angular_acceleration(13, 0.4, 1, 0.5))
 
 # 9
 def calculate_auv2_acceleration(T, alpha, theta, mass = 100):
@@ -293,22 +296,10 @@ def simulate_auv2_motion(T, alpha, l, L, mass, inertia = 100, dt = 0.1, t_final 
     return np.array(time), x, y, theta, v, omega, a
 
 
-# OLD 9.2
-"""T = np.array(T) #converts T into a numpy array
+# ROTATION MATRIX
+"""
+Fxnet = T1cos(alpha)- T4cos(alpha)+ T2cos(alpha) - T3cos(alpha)
+multiply by [cos(theta) -sin(theta)
+              sin(theta)  cos(theta)]
 
-    angles = np.array([alpha, # makes array of angles of each thruster in order T1-->T4
-                       -alpha,
-                       np.pi+alpha,
-                       np.pi-alpha])
-    
-    counter = 0 #defines variables before it's used
-    torque = 0
-
-    for angle in angles:
-        x = (T[counter] * math.cos(angle)) #separates every thruster's force into x and y components
-        y = (T[counter] * math.sin(angle))
-        torque+= (x*l - y*L) #for every thruster's F, its cross producted with distance from center of rotation and added together
-        counter+=1 #repeats for every thruster
-    
-    angular_acceleration = torque / inertia
-    return angular_acceleration"""
+"""

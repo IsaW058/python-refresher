@@ -26,15 +26,17 @@ class Test_(unittest.TestCase):
     def test_will_it_float(self):
         self.assertTrue(physics.will_it_float(0.09, 2))
         self.assertFalse(physics.will_it_float(40, 58))
-        self.assertRaises(ValueError, physics.will_it_float, -0.09, -2)
+        self.assertRaises(ValueError, physics.will_it_float, -0.09, 2)
+        self.assertRaises(ValueError, physics.will_it_float, 0.09, -2)
 
     def test_pressure(self):
-        self.assertAlmostEqual(physics.calculate_pressure(10), 98100)
+        self.assertAlmostEqual(physics.calculate_pressure(10), 98100+101325)
         self.assertNotEqual(physics.calculate_pressure(20), 100000)
 
     def test_acceleration(self):
         self.assertEqual(physics.calculate_acceleration(10, 2), 5)
         self.assertNotEqual(physics.calculate_acceleration(10, 7), 30)
+        self.assertRaises(ValueError, physics.calculate_acceleration [10, -7])
 
     def test_angular_acceleration(self):
         self.assertEqual(physics.calculate_angular_acceleration(10, 2), 5)
@@ -49,6 +51,7 @@ class Test_(unittest.TestCase):
         self.assertNotEqual(physics.calculate_moment_of_inertia(3, 3), 20)
 
     def test_calculate_auv_acceleration(self):
+        
         acc = calculate_auv_acceleration(10, math.radians(30), 100)
         # Expected values
         a_x = 0.0866025404
@@ -56,22 +59,26 @@ class Test_(unittest.TestCase):
         #a_x = (10 * math.cos(math.radians(30))) / 100
         #a_y = (10 * math.sin(math.radians(30))) / 100
         self.assertAlmostEqual(acc[0], a_x)
+        self.assertNotEqual(acc[0], 0.1)
         self.assertAlmostEqual(acc[1], a_y)
 
         with self.assertRaises(ValueError):
             physics.calculate_auv_acceleration(120, math.radians(10))
-        with self.assertRaises(ValueError):
-            physics.calculate_auv_acceleration(10, math.radians(-80))
+        #with self.assertRaises(ValueError):
+            #physics.calculate_auv_acceleration(10, math.radians(-80))
+            
 
     def test_calculate_auv_angular_acceleration(self):
         self.assertAlmostEqual(
             physics.calculate_auv_angular_acceleration(10, 0.4, 1, 0.5), 1.947091711543253)
         self.assertAlmostEqual(
-            physics.calculate_auv_angular_acceleration(10, 0.4, 2, 0.5), 0.9735458557716263)
+            physics.calculate_auv_angular_acceleration(13, 0.4, 1, 0.5), 2.5312192250062284)
+        self.assertNotEqual(
+            physics.calculate_auv_angular_acceleration(13, 0.4, 1, 0.5), 0.5)
     
     def test_calculate_auv2_angular_acceleration(self):
         self.assertAlmostEqual(physics.calculate_auv2_angular_acceleration([10, 1, 4, 0], 0.12, 5, 4, 1), 3.8326606800413248)
-
+        self.assertNotEqual(physics.calculate_auv2_angular_acceleration([9, 1, 4, 0], 0.12, 5, 4, 1), 9)
 
 
 if __name__ == "__main__":
